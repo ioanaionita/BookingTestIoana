@@ -47,7 +47,6 @@ namespace BookingTest
             {
                 objStream = wrGETURL.GetResponse().GetResponseStream();
                 readStream = new StreamReader(objStream, Encoding.UTF8);
-                Console.WriteLine("Search finished.");
                 jsonData = readStream.ReadToEnd();
                 var mySupplier = JsonConvert.DeserializeObject<Supplier>(jsonData);
                 return mySupplier.Options;
@@ -61,7 +60,7 @@ namespace BookingTest
         {
             if(o.Count() == 0)
             {
-                Console.WriteLine(supplier + " Taxi's " + "is not available at the moment.");
+                Console.WriteLine(supplier + "'s " + " Taxi's " + "is not available at the moment.");
                 return;
             }
             Console.WriteLine("SEARCH RESULTS FOR " + supplier);
@@ -71,13 +70,19 @@ namespace BookingTest
             {
                 Console.WriteLine("Option: car_type = " + opt.Car_type + "; price = " + opt.Price);
             }
-            Console.WriteLine("--------------------------------------------------------------------");
         }
 
         static void printSupplier(List<Option> o)
         {
+            int i = 0;
             while(o.Count() != 0)
             {
+                if(i == 0)
+                {
+                    Console.WriteLine("The best options are:");
+                    i++;
+                }
+
                 Option opt = o.Find(x => x.Price == o.Min(y => y.Price));
                 Console.WriteLine(opt.Car_type + " - " + opt.Supplier_Id + " - " + opt.Price);
                 o.RemoveAll(x => x.Price == o.Min(y => y.Price));
@@ -100,85 +105,131 @@ namespace BookingTest
             Console.WriteLine("Please enter the dropoff latitude and longitude.");
             Console.Write("dropoff (latitude,longitude) = ");
             string dropoff = Console.ReadLine();
-            Console.WriteLine("Please enter the number of passengers.");
-            Console.Write("passengers = ");
-            int passengers = Convert.ToInt32(Console.ReadLine());
 
-            string url;
-            url = "https://techtest.rideways.com/dave";
-            List<Option> daveOptions = getSupplierOption(url, pickup, dropoff);
-            //Printed the supplier obtained after the search:
-            Console.WriteLine("--------------------------------------------------------------------");
-            printAll(daveOptions, "DAVE", pickup, dropoff);
-
-            Option dave = new Option();
-            Option eric = new Option();
-            Option jeff = new Option();
+            //Print the results for Dave's Taxi, Eric's Taxi or Jeff's Taxi:
+            Console.WriteLine("Please choose which taxi results you want to get: ");
+            Console.WriteLine("dave/jeff/eric/none");
+            string taxi = Console.ReadLine();
             
-            //Sort and print the search results in descending order based on price.
-            List<Option> options = daveOptions.OrderByDescending(o => o.Price).ToList();
-            Console.WriteLine("--------------------------------------------------------------------");
-            Console.WriteLine("SORTED RESULTS (Dave's Taxis):");
-            printAll(options, "DAVE", pickup, dropoff);
+            
+            string name = "";
 
-            //Print only the options that have enough space for the number of passengers.
-            Console.WriteLine("Options for the number of passenger introduced: ");
-            List<Option> seatOptions = options.Where(o => carTypes[o.Car_type] >= passengers).ToList();
-            foreach (Option opt in seatOptions)
+            switch (taxi)
             {
-                Console.WriteLine("Option: car_type = " + opt.Car_type + "; price = " + opt.Price);
+                case "dave":
+                    {
+                        name = "DAVE";
+                        break;
+                    }
+                case "eric":
+                    {
+                        name = "ERIC";
+                        break;
+                    }
+                case "jeff":
+                    {
+                        name = "JEFF";
+                        break;
+                    }
+                default:
+                    {
+                        break;
+                    }
             }
-            Console.WriteLine("--------------------------------------------------------------------");
+            //If there is a request to a specific taxi supplier, 
+            //then print the options (obtained in maximum 2 secs) in descending order:
+            int passengers = 0;
+            List<Option> options = new List<Option>();
+            List<Option> daveOptions = getSupplierOption("https://techtest.rideways.com/dave", pickup, dropoff).OrderByDescending(o => o.Price).ToList();
+            List<Option> ericOptions = getSupplierOption("https://techtest.rideways.com/eric", pickup, dropoff).OrderByDescending(o => o.Price).ToList();
+            List<Option> jeffOptions = getSupplierOption("https://techtest.rideways.com/jeff", pickup, dropoff).OrderByDescending(o => o.Price).ToList();
+            if (name != "")
+            {
+
+                Console.WriteLine("--------------------------------------------------------------------");
+                //Sort and print the search results in descending order based on price.
+                Console.WriteLine(name + "'s Taxis options:");
+                switch(name)
+                {
+                    case "DAVE":
+                        options = daveOptions;
+                        break;
+                    case "ERIC":
+                        options = ericOptions;
+                        break;
+                    case "JEFF":
+                        options = jeffOptions;
+                        break;
+                    default:
+                        break;
+                }
+                printAll(options, name, pickup, dropoff);
+                Console.WriteLine("--------------------------------------------------------------------");
+
+                Console.WriteLine("Please enter the number of passengers.");
+                Console.Write("passengers = ");
+                passengers = Convert.ToInt32(Console.ReadLine());
+
+                //Print only the options that have enough space for the number of passengers.
+                List<Option> seatOptions = options.Where(o => carTypes[o.Car_type] >= passengers).ToList();
+                if(seatOptions.Count() == 0)
+                {
+                    Console.WriteLine("There is no option for the number of passengers introduced.");
+                }
+                else
+                {
+                    Console.WriteLine("Options for the number of passenger introduced: ");
+                }
+                foreach (Option opt in seatOptions)
+                {
+                    Console.WriteLine("Option: car_type = " + opt.Car_type + "; price = " + opt.Price);
+                }
+                Console.WriteLine("--------------------------------------------------------------------");
+               
+            }
 
             //Get the cheapest option from Dave supplier (which also respects the number of
             //seats requested):
-            dave = options.Find(o => o.Price == options.Min(x => x.Price) && carTypes[o.Car_type] >= passengers);
-           
-        //I should have the cheapest option from Dave (considering the number of passengers):
-        //If there is no option (the number of passengers may be too big, dave == null.
-        //Otherwise, dave = the option with the lowest price.
-        if (dave != null)
-        {
-            Console.WriteLine("The cheapest option from Dave's Taxis is: " + dave.Car_type + " - " + "Dave" + " - " + dave.Price);
-        }
-        else
-        {
-            Console.WriteLine("Dave's Taxi does not have any convenient options.");
-        }
+            Option dave = daveOptions.Find(o => o.Price == daveOptions.Min(x => x.Price) && carTypes[o.Car_type] >= passengers);
 
-        Console.WriteLine("--------------------------------------------------------------------");
+            //I should have the cheapest option from Dave (considering the number of passengers):
+            //If there is no option (the number of passengers may be too big, dave == null.
+            //Otherwise, dave = the option with the lowest price.
+            if (dave != null)
+            {
+                Console.WriteLine("The cheapest option from Dave's Taxis is: " + dave.Car_type + " - " + "Dave" + " - " + dave.Price);
+            }
+            else
+            {
+                Console.WriteLine("Dave's Taxi does not have any convenient options.");
+            }
+            Console.WriteLine("--------------------------------------------------------------------");
+            
+            //Get cheapest option from Eric's Taxis
+            Option eric = ericOptions.Find(o => o.Price == ericOptions.Min(x => x.Price) && carTypes[o.Car_type] >= passengers);
+            if (eric != null)
+            {
+                Console.WriteLine("The cheapest option from Eric's Taxis is: " + eric.Car_type + " - " + "Eric" + " - " + eric.Price);
 
-        //Get cheapest option from Eric's Taxis
-        string urlEric;
-        urlEric = "https://techtest.rideways.com/eric";
-        var ericSupplier = getSupplierOption(urlEric, pickup, dropoff);
-        eric = ericSupplier.Find(e => e.Price == ericSupplier.Min(x => x.Price) && carTypes[e.Car_type] >= passengers);
-        if (eric != null)
-        {
-            Console.WriteLine("The cheapest option from Eric's Taxis is: " + eric.Car_type + " - " + "Eric" + " - " + eric.Price);
-                    
-        }
-        else
-        {
-            Console.WriteLine("Eric's Taxi does not have any convenient options.");
-        }
+            }
+            else
+            {
+                Console.WriteLine("Eric's Taxi does not have any convenient options.");
+            }
+            Console.WriteLine("--------------------------------------------------------------------");
 
-        Console.WriteLine("--------------------------------------------------------------------");
+            //Get cheapest option from Jeff's Taxis
+            Option jeff = jeffOptions.Find(o => o.Price == jeffOptions.Min(x => x.Price) && carTypes[o.Car_type] >= passengers);
+            if (jeff != null)
+            {
+                Console.WriteLine("The cheapest option from Jeff's Taxis is: " + jeff.Car_type + " - " + "Jeff" + " - " + jeff.Price);
+            }
+            else
+            {
+                Console.WriteLine("Jeff's Taxi does not have any convenient options.");
+            }
+            Console.WriteLine("--------------------------------------------------------------------");
 
-        //Get cheapest option from Jeff's Taxis
-        string urlJeff;
-        urlJeff = "https://techtest.rideways.com/jeff";
-        var jeffSupplier = getSupplierOption(urlJeff, pickup, dropoff);
-        jeff = jeffSupplier.Find(j => j.Price == jeffSupplier.Min(x => x.Price) && carTypes[j.Car_type] >= passengers);
-        if (jeff != null)
-        {
-            Console.WriteLine("The cheapest option from Jeff's Taxis is: " + jeff.Car_type + " - " + "Jeff" + " - " + jeff.Price);
-        }
-        else
-        {
-            Console.WriteLine("Jeff's Taxi does not have any convenient options.");
-        }
-        Console.WriteLine("--------------------------------------------------------------------");
 
             //Printing the options (cheapest ones and only one option taken per car type):
             List<Option> bestOptions = new List<Option>();
@@ -203,6 +254,7 @@ namespace BookingTest
 
             Console.WriteLine("Press enter to close...");
             Console.ReadLine();
+            
         }
         }
         
