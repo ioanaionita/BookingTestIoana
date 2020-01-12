@@ -1,4 +1,4 @@
-# Booking Submission Ioana Ionita
+# Booking Technical Test Submission Ioana Ionita
 ## Setup
 ```
 For Part 1, the code was written as a console application (using as IDE Visual Studio 2017).
