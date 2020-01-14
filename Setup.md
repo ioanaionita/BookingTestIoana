@@ -25,7 +25,7 @@ Introduce the number of passengers and then the filter will be applied to the se
 
 ## Part 2
 ```
-The Searches.html file provides the opportunity to enter the pickup and dropoff locations 
+The BookingTest/Searches.html file provides the opportunity to enter the pickup and dropoff locations 
 and choosing the supplier wanted. Using an ajax call, the methods written before 
 were meant to be called, however the methods were not properly called. 
 The behaviour expected is illustrated by creating an identical ajax call directly to the api. 
