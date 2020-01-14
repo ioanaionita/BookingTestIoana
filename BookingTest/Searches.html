@@ -1,0 +1,68 @@
+﻿<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $('#btn').click(function () {
+                var p = $("#pickup").val();
+                var d = $("#dropoff").val();
+                var supplier = $("input[name='taxi']:checked").val();
+                var u = 'https://techtest.rideways.com/' + supplier;
+                $.ajax({
+                    type: 'GET',
+                    url: u,
+                    data: { url: u, pickup: p, dropoff: d},
+                    dataType: 'json',
+                    contentType: 'application/json; charset=utf-8',
+                    success: function (response) {
+                        $('#response').html(JSON.stringify(response));
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    },
+                    timeout: 2000
+                });
+            });
+        });
+        /*$(function () {
+            $('#btn').click(function () {
+                var p = $("#pickup").val();
+                var d = $("#dropoff").val();
+                var i = $("#id").val();
+                $.ajax({
+                    type: 'GET',
+                    url: '/Program/GetSupplierOption',
+                    data: { url: "https://techtest.rideways.com/" + i, pickup: p, dropoff: d },
+                    dataType: 'json',
+                    contentType: 'application/json; charset=utf-8',
+                    success: function (response) {
+                        $('#response').html(JSON.stringify(response));
+                    },
+                    error: function (error) {
+                        console.log(error);
+                    }
+                });
+            });
+        });*/
+
+    </script>
+</head>
+
+<body>
+    Choose a taxi supplier: <br />
+    <input type="radio" name="taxi" value="dave"> Dave<br>
+    <input type="radio" name="taxi" value="jeff"> Jeff<br>
+    <input type="radio" name="taxi" value="eric"> Eric <br />
+    <label> Please introduce the pickup (latitude, longitude):</label>
+    <input id="pickup" type="text" />
+    <br />
+    <label> Please introduce the dropoff (latitude, longitude):</label>
+    <input id="dropoff" type="text" />
+    <br />
+    <button id="btn">Search for option</button>
+    <div id="response"></div>
+</body>
+
+</html>

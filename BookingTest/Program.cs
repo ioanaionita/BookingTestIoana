@@ -7,6 +7,10 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Http;
+using System.Web.Http.Cors;
+using System.Web.Script.Services;
+using System.Web.Services;
 
 namespace BookingTest
 {
@@ -25,9 +29,10 @@ namespace BookingTest
         public int Price { get; set; }
     }
 
-    class Program
+    public class Program
     {
-        static List<Option> getSupplierOption (string url, string pickup, string dropoff)
+        [WebMethod]
+        public static List<Option> GetSupplierOption (string url, string pickup, string dropoff)
         {
             var uriBuilder = new UriBuilder(url);
             var query = HttpUtility.ParseQueryString(uriBuilder.Query);
@@ -56,7 +61,7 @@ namespace BookingTest
             return o;
         }
 
-        static void printAll(List<Option> o, string supplier, string pickup, string dropoff)
+        static void PrintAll(List<Option> o, string supplier, string pickup, string dropoff)
         {
             if(o.Count() == 0)
             {
@@ -72,7 +77,7 @@ namespace BookingTest
             }
         }
 
-        static void printSupplier(List<Option> o)
+        static void PrintSupplier(List<Option> o)
         {
             int i = 0;
             while(o.Count() != 0)
@@ -140,9 +145,9 @@ namespace BookingTest
             //then print the options (obtained in maximum 2 secs) in descending order:
             int passengers = 0;
             List<Option> options = new List<Option>();
-            List<Option> daveOptions = getSupplierOption("https://techtest.rideways.com/dave", pickup, dropoff).OrderByDescending(o => o.Price).ToList();
-            List<Option> ericOptions = getSupplierOption("https://techtest.rideways.com/eric", pickup, dropoff).OrderByDescending(o => o.Price).ToList();
-            List<Option> jeffOptions = getSupplierOption("https://techtest.rideways.com/jeff", pickup, dropoff).OrderByDescending(o => o.Price).ToList();
+            List<Option> daveOptions = GetSupplierOption("https://techtest.rideways.com/dave", pickup, dropoff).OrderByDescending(o => o.Price).ToList();
+            List<Option> ericOptions = GetSupplierOption("https://techtest.rideways.com/eric", pickup, dropoff).OrderByDescending(o => o.Price).ToList();
+            List<Option> jeffOptions = GetSupplierOption("https://techtest.rideways.com/jeff", pickup, dropoff).OrderByDescending(o => o.Price).ToList();
             if (name != "")
             {
 
@@ -163,7 +168,7 @@ namespace BookingTest
                     default:
                         break;
                 }
-                printAll(options, name, pickup, dropoff);
+                PrintAll(options, name, pickup, dropoff);
                 Console.WriteLine("--------------------------------------------------------------------");
 
                 Console.WriteLine("Please enter the number of passengers.");
@@ -249,7 +254,7 @@ namespace BookingTest
                 bestOptions.Add(jeff);
             }
             
-            printSupplier(bestOptions);
+            PrintSupplier(bestOptions);
             Console.WriteLine("--------------------------------------------------------------------");
 
             Console.WriteLine("Press enter to close...");
